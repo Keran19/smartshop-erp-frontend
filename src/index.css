@@ -1,0 +1,73 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #a3cbae transparent;
+}
+
+::selection {
+  background-color: #f0c04a;
+  color: #16231b;
+}
+
+/* Respecte les preferences de reduction de mouvement */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+@layer components {
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold
+           transition-colors duration-150 focus-visible:outline focus-visible:outline-2
+           focus-visible:outline-offset-2 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+  .btn-primary {
+    @apply btn bg-forest-700 text-white hover:bg-forest-800 focus-visible:outline-forest-600;
+  }
+  .btn-gold {
+    @apply btn bg-gold-500 text-charcoal-950 hover:bg-gold-600 focus-visible:outline-gold-600;
+  }
+  .btn-ghost {
+    @apply btn bg-transparent text-forest-700 hover:bg-forest-50 focus-visible:outline-forest-600;
+  }
+  .btn-danger {
+    @apply btn bg-red-600 text-white hover:bg-red-700 focus-visible:outline-red-600;
+  }
+  .card {
+    @apply rounded-xl2 border border-forest-100 bg-white shadow-card;
+  }
+  .input {
+    @apply w-full rounded-lg border border-forest-200 bg-white px-3 py-2.5 text-sm text-ink
+           placeholder:text-ink/40 focus:border-forest-500 focus:outline-none focus:ring-2
+           focus:ring-forest-100 transition-colors;
+  }
+  .label {
+    @apply mb-1.5 block text-xs font-semibold uppercase tracking-wide text-forest-700/80;
+  }
+  .badge {
+    @apply inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold;
+  }
+  .table-erp {
+    @apply w-full border-collapse text-sm;
+  }
+  .table-erp thead th {
+    @apply border-b border-forest-100 bg-forest-50/60 px-3 py-2.5 text-left text-xs font-semibold
+           uppercase tracking-wide text-forest-700/70;
+  }
+  .table-erp tbody td {
+    @apply border-b border-forest-50 px-3 py-2.5 text-ink;
+  }
+  .table-erp tbody tr:hover {
+    @apply bg-gold-300/10;
+  }
+}
