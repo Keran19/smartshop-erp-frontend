@@ -8,6 +8,7 @@ import Layout from './components/Layout'
 import Connexion from './pages/Connexion'
 import Dashboard from './pages/Dashboard'
 import Caisse from './pages/caisse/Caisse'
+import GestionCaisseAdmin from './pages/admin/GestionCaisseAdmin'
 import PointDeVente from './pages/ventes/PointDeVente'
 import HistoriqueVentes from './pages/ventes/HistoriqueVentes'
 import RetoursListe from './pages/retours/RetoursListe'
@@ -72,6 +73,7 @@ export default function App() {
                     <Route path="/inventaires/nouveau" element={<InventaireForm />} />
                     <Route path="/depenses" element={<Depenses />} />
                     <Route path="/catalogue" element={<CategoriesMarques />} />
+                    <Route path="/gestion-caisse" element={<GestionCaisseAdmin />} />
                   </Route>
 
                   <Route element={<ProtectedRoute rolesAutorises={['ADMIN']} />}>

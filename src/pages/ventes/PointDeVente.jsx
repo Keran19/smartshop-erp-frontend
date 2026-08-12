@@ -67,6 +67,20 @@ export default function PointDeVente() {
         }]
       })
       setCodeBarres('')
+
+      // Alerte marge : si le prix de vente actuel ne couvre plus le cout du lot le plus ancien
+      // encore en stock (achete a un prix different), on previent tout de suite le vendeur.
+      try {
+        const { data: lot } = await api.get('/approvisionnements/lot-actuel', {
+          params: { idProduit: produit.idProduit, idBoutique },
+        })
+        if (lot.alerteMarge) {
+          notifier(
+            `Attention : "${lot.nomProduit}" est vendu a perte au prix actuel (lot achete a ${lot.prixAchatLotActuel} FCFA)`,
+            'erreur'
+          )
+        }
+      } catch { /* pas bloquant si l'info de lot n'est pas disponible */ }
     } catch (err) {
       if (err.response?.data?.code === 'PRODUIT_INCONNU') {
         notifier('Produit inconnu : creez-le pour continuer', 'erreur')
@@ -88,18 +102,19 @@ export default function PointDeVente() {
     )
   }
 
+  /** Modification manuelle du prix unitaire d'une ligne du panier (vendeurs et gerants). */
+  function modifierPrixLigne(idProduit, valeur) {
+    const prix = Number(valeur)
+    setPanier((actuel) =>
+      actuel.map((l) => (l.idProduit === idProduit ? { ...l, prixUnitaire: Number.isFinite(prix) && prix >= 0 ? prix : 0 } : l))
+    )
+  }
+
   function retirerLigne(idProduit) {
     setPanier((actuel) => actuel.filter((l) => l.idProduit !== idProduit))
   }
 
-  function modifierPrixUnitaire(idProduit, valeur) {
-    const prix = valeur === '' ? '' : Number(valeur)
-    setPanier((actuel) =>
-      actuel.map((l) => (l.idProduit === idProduit ? { ...l, prixUnitaire: prix } : l))
-    )
-  }
-
-  const totalPanier = panier.reduce((s, l) => s + l.quantite * (Number(l.prixUnitaire) || 0), 0)
+  const totalPanier = panier.reduce((s, l) => s + l.quantite * l.prixUnitaire, 0)
   const montantFinalEstime = totalPanier - (Number(remise) || 0)
   const monnaieEstimee = Math.max(0, (Number(montantRecu) || 0) - montantFinalEstime)
 
@@ -111,11 +126,9 @@ export default function PointDeVente() {
       remiseGlobale: Number(remise) || 0,
       montantRecu: montantRecu === '' ? null : Number(montantRecu),
       dateLimiteCredit: modeReglement === 'CREDIT' ? (dateLimiteCredit || null) : null,
-      lignes: panier.map((l) => ({
-        idProduit: l.idProduit,
-        quantite: l.quantite,
-        prixUnitaire: l.prixUnitaire === '' ? 0 : Number(l.prixUnitaire),
-      })),
+      // prixUnitaire est envoye tel qu'ajuste dans le panier : le backend l'utilise directement
+      // comme prix force pour la ligne (aucune restriction de role sur cet override).
+      lignes: panier.map((l) => ({ idProduit: l.idProduit, quantite: l.quantite, prixUnitaire: l.prixUnitaire })),
     }
   }
 
@@ -149,8 +162,14 @@ export default function PointDeVente() {
     }
   }
 
-  function imprimer(idVente) {
-    window.open(`${api.defaults.baseURL}/ventes/${idVente}/imprimer`, '_blank')
+  async function imprimer(idVente) {
+    try {
+      const { data } = await api.get(`/ventes/${idVente}/imprimer`, { responseType: 'blob' })
+      const url = window.URL.createObjectURL(data)
+      window.open(url, '_blank')
+    } catch (err) {
+      notifier(messageErreur(err, 'Impression impossible'), 'erreur')
+    }
   }
 
   return (
@@ -203,15 +222,14 @@ export default function PointDeVente() {
                       </td>
                       <td>
                         <input
-                          type="number"
-                          min="0"
-                          step="1"
+                          type="number" min="0" step="1"
                           value={l.prixUnitaire}
-                          onChange={(e) => modifierPrixUnitaire(l.idProduit, e.target.value)}
-                          className="input w-24 font-mono"
+                          onChange={(e) => modifierPrixLigne(l.idProduit, e.target.value)}
+                          className="input !w-24 font-mono"
+                          title="Modifier le prix unitaire pour cette vente"
                         />
                       </td>
-                      <td className="font-mono font-semibold">{formaterMontant(l.quantite * (Number(l.prixUnitaire) || 0))}</td>
+                      <td className="font-mono font-semibold">{formaterMontant(l.quantite * l.prixUnitaire)}</td>
                       <td>
                         <button onClick={() => retirerLigne(l.idProduit)} className="text-red-500 hover:text-red-700" aria-label="Retirer">✕</button>
                       </td>

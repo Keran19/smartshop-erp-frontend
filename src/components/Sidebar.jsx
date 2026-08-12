@@ -13,6 +13,7 @@ const LIENS = [
   { to: '/produits', label: 'Produits & stock', icone: '📦', roles: null },
   { to: '/statistiques', label: 'Statistiques', icone: '📊', roles: null },
   { to: '/clients', label: 'Clients', icone: '👥', roles: null },
+  { to: '/gestion-caisse', label: 'Gestion de caisse', icone: '🗄️', roles: ['ADMIN', 'GERANT'] },
   { to: '/fournisseurs', label: 'Fournisseurs', icone: '🚚', roles: ['ADMIN', 'GERANT'] },
   { to: '/approvisionnements', label: 'Approvisionnements', icone: '📥', roles: ['ADMIN', 'GERANT'] },
   { to: '/inventaires', label: 'Inventaire', icone: '📋', roles: ['ADMIN', 'GERANT'] },
